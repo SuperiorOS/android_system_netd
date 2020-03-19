@@ -67,6 +67,7 @@ class DnsResolverBinderTest : public ::testing::Test {
         if (binder != nullptr) {
             mDnsResolver = android::interface_cast<IDnsResolver>(binder);
         }
+        // This could happen when the test isn't running as root, or if netd isn't running.
         assert(nullptr != mDnsResolver.get());
         // Create cache for test
         mDnsResolver->createNetworkCache(TEST_NETID);
@@ -225,6 +226,9 @@ TEST_F(DnsResolverBinderTest, EventListener_onDnsEvent) {
 }
 
 TEST_F(DnsResolverBinderTest, SetResolverConfiguration_Tls) {
+    // Certificate fingerprints are no longer supported by the module.
+    SKIP_IF_RESOLVER_VERSION_NEWER_THAN(mDnsResolver, 2);
+
     const std::vector<std::string> LOCALLY_ASSIGNED_DNS{"8.8.8.8", "2001:4860:4860::8888"};
     std::vector<uint8_t> fp(SHA256_SIZE);
     std::vector<uint8_t> short_fp(1);
